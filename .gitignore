@@ -1,0 +1,37 @@
+# Environment / secrets
+.env
+.env.bak.*
+
+# App runtime data (sessions, database, uploads, memory, ChromaDB, ssh keys, etc.)
+/data/
+/logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+requirements.lock
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Build/package output
+build/
+dist/
+*.spec.bak
+
+# Node
+node_modules/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Claude Code local session config (personal, not shared)
+.claude/
