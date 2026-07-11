@@ -16,10 +16,6 @@
   <a href="https://repology.org/project/odysseus-ai/versions"><img src="https://repology.org/badge/vertical-allrepos/odysseus-ai.svg" alt="Packaging status"></a>
 </p>
 
-<p align="center">
-  <img src="docs/odysseus-browser.jpg" alt="Odysseus interface">
-</p>
-
 ---
 
 ## Quick Start
