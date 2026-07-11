@@ -20,7 +20,15 @@
 import { state } from './state.js';
 import modalManager from '../modalManager.js';
 import { HISTORY_ICON, relTime } from './layer-helpers.js';
-import { historyPanelHTML } from './build/popups.js';
+// See galleryEditor.js's _safeEditorBuildImport comment: a static-import
+// failure here would cascade up through gallery.js into app.js and break
+// every click handler in the app, so this is loaded defensively.
+let historyPanelHTML = () => '';
+try {
+  ({ historyPanelHTML } = await import('./build/popups.js'));
+} catch (e) {
+  console.error('[history-panel] Failed to load ./build/popups.js — history panel will be degraded.', e);
+}
 
 export function createHistoryPanel({ undo, redo }) {
   function jumpToHistory(offset) {

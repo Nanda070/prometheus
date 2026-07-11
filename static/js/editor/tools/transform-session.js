@@ -31,10 +31,16 @@
  * }}
  */
 import { state } from '../state.js';
-import {
-  transformPopupHTML,
-  attachSpinRepeat,
-} from '../build/transform-popup.js';
+// See galleryEditor.js's _safeEditorBuildImport comment: a static-import
+// failure here would cascade up through gallery.js into app.js and break
+// every click handler in the app, so this is loaded defensively.
+let transformPopupHTML = () => '';
+let attachSpinRepeat = () => {};
+try {
+  ({ transformPopupHTML, attachSpinRepeat } = await import('../build/transform-popup.js'));
+} catch (e) {
+  console.error('[transform-session] Failed to load ../build/transform-popup.js — transform popup will be degraded.', e);
+}
 
 export function createTransformSession({
   activeLayer, saveState, composite, fitZoom, drawTransformHandles,

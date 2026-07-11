@@ -10,7 +10,15 @@
  *
  * @returns {{ toggleShortcuts: (show?: boolean) => void }}
  */
-import { shortcutsPopupHTML } from './build/popups.js';
+// See galleryEditor.js's _safeEditorBuildImport comment: a static-import
+// failure here would cascade up through gallery.js into app.js and break
+// every click handler in the app, so this is loaded defensively.
+let shortcutsPopupHTML = () => '';
+try {
+  ({ shortcutsPopupHTML } = await import('./build/popups.js'));
+} catch (e) {
+  console.error('[shortcuts-popover] Failed to load ./build/popups.js — shortcuts popover will be degraded.', e);
+}
 
 export function createShortcutsPopover() {
   let pop = null;

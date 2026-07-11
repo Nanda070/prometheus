@@ -54,21 +54,53 @@ import {
   buildThumbnail as _buildThumbnailImpl,
   buildMergedMaskCanvas as _buildMergedMaskCanvasImpl,
 } from './editor/composite-helpers.js';
-import { buildToolbar as _buildToolbar } from './editor/build/toolbar.js';
-import { buildTopbar as _buildTopbar } from './editor/build/topbar.js';
-import {
-  controlsHTML as _controlsHTML,
-  layerPanelHTML as _layerPanelHTML,
-} from './editor/build/controls.js';
-import {
-  transformPopupHTML as _transformPopupHTML,
-  attachSpinRepeat as _attachSpinRepeat,
-} from './editor/build/transform-popup.js';
-import {
-  shortcutsPopupHTML as _shortcutsPopupHTML,
-  historyPanelHTML as _historyPanelHTMLImpl,
-  canvasSizePromptHTML as _canvasSizePromptHTML,
-} from './editor/build/popups.js';
+// editor/build/*.js provide the DOM/HTML builder functions for the editor
+// chrome (toolbar, topbar, controls, transform popup, misc popups, right
+// panel). They're imported dynamically with a fallback so a missing/corrupt
+// build file only disables the affected editor UI piece instead of throwing
+// during this module's static-import evaluation — a static-import failure
+// here would cascade up through gallery.js into app.js (which statically
+// imports gallery.js) and silently break every click handler in the app.
+async function _safeEditorBuildImport(path, fallback) {
+  try {
+    return await import(path);
+  } catch (e) {
+    console.error(`[galleryEditor] Failed to load ${path} — the image editor will be degraded.`, e);
+    return fallback;
+  }
+}
+const [
+  _toolbarMod, _topbarMod, _controlsMod, _transformPopupMod, _popupsMod, _rightPanelMod,
+] = await Promise.all([
+  _safeEditorBuildImport('./editor/build/toolbar.js', {
+    buildToolbar: () => { throw new Error('Image editor toolbar unavailable: missing static/js/editor/build/toolbar.js'); },
+  }),
+  _safeEditorBuildImport('./editor/build/topbar.js', {
+    buildTopbar: () => { throw new Error('Image editor topbar unavailable: missing static/js/editor/build/topbar.js'); },
+  }),
+  _safeEditorBuildImport('./editor/build/controls.js', {
+    controlsHTML: () => '', layerPanelHTML: () => '',
+  }),
+  _safeEditorBuildImport('./editor/build/transform-popup.js', {
+    transformPopupHTML: () => '', attachSpinRepeat: () => {},
+  }),
+  _safeEditorBuildImport('./editor/build/popups.js', {
+    shortcutsPopupHTML: () => '', historyPanelHTML: () => '', canvasSizePromptHTML: () => '',
+  }),
+  _safeEditorBuildImport('./editor/build/right-panel.js', {
+    buildRightPanel: () => { throw new Error('Image editor right panel unavailable: missing static/js/editor/build/right-panel.js'); },
+  }),
+]);
+const _buildToolbar = _toolbarMod.buildToolbar;
+const _buildTopbar = _topbarMod.buildTopbar;
+const _controlsHTML = _controlsMod.controlsHTML;
+const _layerPanelHTML = _controlsMod.layerPanelHTML;
+const _transformPopupHTML = _transformPopupMod.transformPopupHTML;
+const _attachSpinRepeat = _transformPopupMod.attachSpinRepeat;
+const _shortcutsPopupHTML = _popupsMod.shortcutsPopupHTML;
+const _historyPanelHTMLImpl = _popupsMod.historyPanelHTML;
+const _canvasSizePromptHTML = _popupsMod.canvasSizePromptHTML;
+const buildRightPanel = _rightPanelMod.buildRightPanel;
 import { state } from './editor/state.js';
 import { createMoveTool } from './editor/tools/move.js';
 import { createCropTool } from './editor/tools/crop.js';
@@ -90,7 +122,6 @@ import { createAdjPopupSystem } from './editor/fx/adj-popup.js';
 import { createHistoryPanel } from './editor/history-panel.js';
 import { createTransformSession } from './editor/tools/transform-session.js';
 import { wireCanvasEvents } from './editor/canvas-events.js';
-import { buildRightPanel } from './editor/build/right-panel.js';
 import { wireSliderUx } from './editor/slider-ux.js';
 import { createShortcutsPopover } from './editor/shortcuts-popover.js';
 import { wireKeyboardShortcuts } from './editor/keyboard-shortcuts.js';
